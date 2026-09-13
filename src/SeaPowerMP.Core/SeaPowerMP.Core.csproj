@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Engine-agnostic networking logic. Must never reference Unity or game assemblies,
+       so everything in here stays unit-testable outside the game. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>SeaPowerMP.Core</AssemblyName>
+    <RootNamespace>SeaPowerMP.Core</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+</Project>

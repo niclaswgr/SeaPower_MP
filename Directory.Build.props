@@ -1,0 +1,19 @@
+<Project>
+  <!-- Per-machine overrides (e.g. a different GameDir) go in Directory.Build.props.user (gitignored). -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.props.user" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.props.user')" />
+
+  <PropertyGroup>
+    <GameDir Condition="'$(GameDir)' == ''">D:\SteamLibrary\steamapps\common\Sea Power</GameDir>
+    <AnchorChainDir Condition="'$(AnchorChainDir)' == ''">$(GameDir)\..\..\workshop\content\1286220\3380210757</AnchorChainDir>
+    <ManagedDir>$(GameDir)\Sea Power_Data\Managed</ManagedDir>
+    <BepInExCoreDir>$(GameDir)\BepInEx\core</BepInExCoreDir>
+    <ModDeployDir>$(GameDir)\Sea Power_Data\StreamingAssets\SeaPowerMP</ModDeployDir>
+
+    <!-- Keep in sync with PluginInfo.Version. -->
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

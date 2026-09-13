@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>SeaPowerMP</AssemblyName>
+    <RootNamespace>SeaPowerMP</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DeployMod Condition="'$(DeployMod)' == ''">true</DeployMod>
+    <!-- The game assemblies were built against newer netstandard facade versions than the SDK ref pack; harmless. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SeaPowerMP.Core\SeaPowerMP.Core.csproj" />
+  </ItemGroup>
+
+  <!-- Game, loader and Unity assemblies are provided at runtime: never copy them. -->
+  <ItemGroup>
+    <Reference Include="Seapower-Scripts" HintPath="$(ManagedDir)\Seapower-Scripts.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(ManagedDir)\UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(ManagedDir)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="BepInEx" HintPath="$(BepInExCoreDir)\BepInEx.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(BepInExCoreDir)\0Harmony.dll" Private="false" />
+    <Reference Include="AnchorChain" HintPath="$(AnchorChainDir)\AnchorChain.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Copies the plugin, the core library and the static mod files into the game's local mod folder. -->
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(DeployMod)' == 'true' And Exists('$(GameDir)')">
+    <ItemGroup>
+      <ModStaticFiles Include="$(MSBuildThisFileDirectory)..\..\mod\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="$(TargetPath);$(OutDir)SeaPowerMP.Core.dll" DestinationFolder="$(ModDeployDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ModStaticFiles)" DestinationFiles="@(ModStaticFiles->'$(ModDeployDir)\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="SeaPowerMP deployed to $(ModDeployDir)" />
+  </Target>
+</Project>
