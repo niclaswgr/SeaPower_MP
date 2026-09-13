@@ -5,6 +5,8 @@
     <RootNamespace>SeaPowerMP</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DeployMod Condition="'$(DeployMod)' == ''">true</DeployMod>
+    <!-- Class libraries do not copy NuGet DLLs by default; LiteNetLib has to ship with the mod. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- The game assemblies were built against newer netstandard facade versions than the SDK ref pack; harmless. -->
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
   </PropertyGroup>
@@ -13,22 +15,33 @@
     <ProjectReference Include="..\SeaPowerMP.Core\SeaPowerMP.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="LiteNetLib" Version="2.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="UI\LobbyOverlay.xaml" LogicalName="SeaPowerMP.UI.LobbyOverlay.xaml" />
+  </ItemGroup>
+
   <!-- Game, loader and Unity assemblies are provided at runtime: never copy them. -->
   <ItemGroup>
     <Reference Include="Seapower-Scripts" HintPath="$(ManagedDir)\Seapower-Scripts.dll" Private="false" />
+    <Reference Include="com.rlabrecque.steamworks.net" HintPath="$(ManagedDir)\com.rlabrecque.steamworks.net.dll" Private="false" />
     <Reference Include="UnityEngine" HintPath="$(ManagedDir)\UnityEngine.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ManagedDir)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="Noesis.NoesisGUI" HintPath="$(ManagedDir)\Noesis.NoesisGUI.dll" Private="false" />
     <Reference Include="BepInEx" HintPath="$(BepInExCoreDir)\BepInEx.dll" Private="false" />
     <Reference Include="0Harmony" HintPath="$(BepInExCoreDir)\0Harmony.dll" Private="false" />
     <Reference Include="AnchorChain" HintPath="$(AnchorChainDir)\AnchorChain.dll" Private="false" />
   </ItemGroup>
 
-  <!-- Copies the plugin, the core library and the static mod files into the game's local mod folder. -->
+  <!-- Copies the plugin, its dependencies and the static mod files into the game's local mod folder. -->
   <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(DeployMod)' == 'true' And Exists('$(GameDir)')">
     <ItemGroup>
+      <ModAssemblies Include="$(TargetPath);$(OutDir)SeaPowerMP.Core.dll;$(OutDir)LiteNetLib.dll" />
       <ModStaticFiles Include="$(MSBuildThisFileDirectory)..\..\mod\**\*" />
     </ItemGroup>
-    <Copy SourceFiles="$(TargetPath);$(OutDir)SeaPowerMP.Core.dll" DestinationFolder="$(ModDeployDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ModAssemblies)" DestinationFolder="$(ModDeployDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(ModStaticFiles)" DestinationFiles="@(ModStaticFiles->'$(ModDeployDir)\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     <Message Importance="high" Text="SeaPowerMP deployed to $(ModDeployDir)" />
   </Target>

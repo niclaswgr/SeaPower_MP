@@ -7,13 +7,16 @@ using AnchorChain;
 
 namespace SeaPowerMP
 {
+    // The only public type in this assembly: Anchor Chain scans exported types and inspects their
+    // interfaces before our resolver is installed, so nothing else may expose types from sibling DLLs.
     [ACPlugin(PluginInfo.Guid, PluginInfo.Name, PluginInfo.Version)]
     public sealed class AnchorChainEntry : IAnchorChainMod
     {
         public void TriggerEntryPoint()
         {
             // Anchor Chain loads us with Assembly.LoadFile, which does not resolve sibling DLLs
-            // (SeaPowerMP.Core). The resolver must be installed before any method touching Core is JIT-compiled.
+            // (SeaPowerMP.Core, LiteNetLib). The resolver must be installed before any method
+            // touching them is JIT-compiled.
             InstallSiblingResolver();
             Boot();
         }
@@ -30,16 +33,14 @@ namespace SeaPowerMP
             AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
             {
                 string? name = new AssemblyName(args.Name).Name;
-                if (name == null || !name.StartsWith("SeaPowerMP", StringComparison.Ordinal))
+                if (name == null)
+                    return null;
+                string path = Path.Combine(directory, name + ".dll");
+                if (!File.Exists(path))
                     return null;
 
-                Assembly? loaded = AppDomain.CurrentDomain.GetAssemblies()
-                    .FirstOrDefault(a => a.GetName().Name == name);
-                if (loaded != null)
-                    return loaded;
-
-                string path = Path.Combine(directory, name + ".dll");
-                return File.Exists(path) ? Assembly.LoadFile(path) : null;
+                return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == name)
+                       ?? Assembly.LoadFile(path);
             };
         }
     }

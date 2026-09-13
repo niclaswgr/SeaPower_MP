@@ -1,0 +1,155 @@
+<!-- Lobby window. Loaded at runtime into a NoesisView on a dedicated overlay camera (see LobbyOverlay.cs).
+     The root Grid has no background so everything outside the panel stays clickable for the game. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Grid.Resources>
+    <SolidColorBrush x:Key="PanelBrush" Color="#E6101A2A"/>
+    <SolidColorBrush x:Key="EdgeBrush" Color="#FF35507A"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#FFDCE6F5"/>
+    <SolidColorBrush x:Key="DimBrush" Color="#FF8FA3C0"/>
+    <SolidColorBrush x:Key="HeadBrush" Color="#FFAFC8E8"/>
+    <SolidColorBrush x:Key="ButtonBrush" Color="#FF1E3150"/>
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#FF2B4673"/>
+    <SolidColorBrush x:Key="ButtonPressBrush" Color="#FF3A5E99"/>
+    <SolidColorBrush x:Key="FieldBrush" Color="#FF0B1320"/>
+    <SolidColorBrush x:Key="BlueBrush" Color="#FF6FA8FF"/>
+    <SolidColorBrush x:Key="RedBrush" Color="#FFFF6F6F"/>
+
+    <Style TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="Dim" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource DimBrush}"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="Heading" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource HeadBrush}"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Margin" Value="0,12,0,4"/>
+    </Style>
+
+    <!-- Buttons never take keyboard focus: a focused button would turn keys meant for the game
+         (Enter, Space) into button presses. Every styled control needs an explicit template,
+         otherwise Noesis draws a placeholder. -->
+    <Style x:Key="Btn" TargetType="Button">
+      <Setter Property="Focusable" Value="False"/>
+      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Margin" Value="0,3,0,0"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Bd" CornerRadius="3" Padding="10,5"
+                    Background="{StaticResource ButtonBrush}"
+                    BorderBrush="{StaticResource EdgeBrush}" BorderThickness="1">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{StaticResource ButtonPressBrush}"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style TargetType="TextBox">
+      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+      <Setter Property="CaretBrush" Value="{StaticResource TextBrush}"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TextBox">
+            <Border CornerRadius="3" Padding="6,3"
+                    Background="{StaticResource FieldBrush}"
+                    BorderBrush="{StaticResource EdgeBrush}" BorderThickness="1">
+              <ScrollViewer x:Name="PART_ContentHost" Background="{x:Null}" VerticalAlignment="Center"
+                            HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Grid.Resources>
+
+  <Border x:Name="Panel" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="40,80,0,0"
+          Width="380" CornerRadius="6" Padding="14"
+          Background="{StaticResource PanelBrush}"
+          BorderBrush="{StaticResource EdgeBrush}" BorderThickness="1">
+    <Border.RenderTransform>
+      <TranslateTransform/>
+    </Border.RenderTransform>
+    <StackPanel>
+
+      <!-- Title row, doubles as drag handle. Transparent (not null) so the whole row hit-tests. -->
+      <Grid x:Name="DragBar" Background="Transparent">
+        <TextBlock x:Name="TitleText" FontWeight="Bold" FontSize="14" Foreground="{StaticResource HeadBrush}"/>
+        <TextBlock x:Name="HotkeyText" Style="{StaticResource Dim}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+      </Grid>
+
+      <TextBlock x:Name="DisabledText" Foreground="#FFFF7070" Margin="0,10,0,0" Visibility="Collapsed"/>
+
+      <StackPanel x:Name="OfflineSection">
+        <TextBlock Style="{StaticResource Heading}" Text="PLAYER"/>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="60"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Text="Name" VerticalAlignment="Center"/>
+          <TextBox x:Name="NameBox" Grid.Column="1" MaxLength="32"/>
+        </Grid>
+        <TextBlock Style="{StaticResource Dim}" Text="Empty = your Steam name." Margin="60,2,0,0"/>
+
+        <TextBlock Style="{StaticResource Heading}" Text="STEAM"/>
+        <Button x:Name="HostSteamButton" Style="{StaticResource Btn}" Content="Host session"/>
+        <TextBlock x:Name="SteamHint" Style="{StaticResource Dim}" Margin="0,4,0,0"/>
+
+        <TextBlock Style="{StaticResource Heading}" Text="DIRECT IP"/>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="70"/>
+          </Grid.ColumnDefinitions>
+          <TextBox x:Name="AddressBox" MaxLength="64"/>
+          <TextBlock Grid.Column="1" Text=":" Margin="4,0" VerticalAlignment="Center"/>
+          <TextBox x:Name="PortBox" Grid.Column="2" MaxLength="5"/>
+        </Grid>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Button x:Name="HostIpButton" Style="{StaticResource Btn}" Content="Host on this port" Margin="0,4,3,0"/>
+          <Button x:Name="JoinIpButton" Grid.Column="1" Style="{StaticResource Btn}" Content="Join" Margin="3,4,0,0"/>
+        </Grid>
+        <TextBlock Style="{StaticResource Dim}" Margin="0,4,0,0"
+                   Text="For LAN, VPN or port forwarding. The host's UDP port must be reachable."/>
+      </StackPanel>
+
+      <StackPanel x:Name="SessionSection" Visibility="Collapsed">
+        <TextBlock x:Name="StatusText" FontWeight="Bold" Margin="0,12,0,0"/>
+        <Button x:Name="InviteButton" Style="{StaticResource Btn}" Content="Invite Steam friends" Margin="0,8,0,0"/>
+        <TextBlock Style="{StaticResource Heading}" Text="PLAYERS"/>
+        <StackPanel x:Name="RosterPanel"/>
+        <Button x:Name="LeaveButton" Style="{StaticResource Btn}" Margin="0,12,0,0"/>
+      </StackPanel>
+
+      <TextBlock x:Name="ProblemText" Foreground="#FFFFB070" Margin="0,12,0,0" Visibility="Collapsed"/>
+    </StackPanel>
+  </Border>
+</Grid>
